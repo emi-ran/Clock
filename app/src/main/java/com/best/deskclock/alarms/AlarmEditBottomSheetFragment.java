@@ -79,6 +79,7 @@ import com.best.deskclock.dialogfragment.SpinnerDatePickerDialogFragment;
 import com.best.deskclock.dialogfragment.SpinnerTimePickerDialogFragment;
 import com.best.deskclock.dialogfragment.VibrationPatternDialogFragment;
 import com.best.deskclock.dialogfragment.VolumeCrescendoDurationDialogFragment;
+import com.best.deskclock.dialogfragment.AlarmMathQuestionCountDialogFragment;
 import com.best.deskclock.events.Events;
 import com.best.deskclock.provider.Alarm;
 import com.best.deskclock.provider.AlarmInstance;
@@ -524,6 +525,7 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
         bindSnoozeDurationNote();
         bindMissedAlarmRepeatLimit();
         bindAlarmHardnessLevel();
+        bindMathQuestionCount();
         bindCrescendoDuration();
         bindAlarmVolume();
         bindSpace();
@@ -1112,6 +1114,13 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
         mBinding.mathHardnessLevelLayout.setOnClickListener(openMathHardnessLevelDialogFragment);
     }
 
+    private void bindMathQuestionCount() {
+        mBinding.mathQuestionCountValue.setText(java.text.NumberFormat.getIntegerInstance().format(mAlarm.mathQuestionCount));
+        mBinding.mathQuestionCountLayout.setOnClickListener(v ->
+            AlarmMathQuestionCountDialogFragment.show(getChildFragmentManager(),
+                AlarmMathQuestionCountDialogFragment.newInstance(mAlarm.mathQuestionCount)));
+    }
+
     private void bindCrescendoDuration() {
         if (SettingsDAO.isPerAlarmCrescendoDurationDisabled(mPrefs)) {
             mBinding.crescendoDurationLayout.setVisibility(GONE);
@@ -1173,6 +1182,7 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
             && mBinding.snoozeDurationLayout.getVisibility() == GONE
             && mBinding.missedAlarmRepeatLimitLayout.getVisibility() == GONE
             && mBinding.mathHardnessLevelLayout.getVisibility() == GONE
+            && mBinding.mathQuestionCountLayout.getVisibility() == GONE
             && mBinding.crescendoDurationLayout.getVisibility() == GONE
             && mBinding.alarmVolumeLayout.getVisibility() == GONE) {
             mBinding.space.setVisibility(GONE);
@@ -1410,6 +1420,12 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
                 mAlarm.mathHardnessLevel = bundle.getString(AlarmMathHardnessLevelDialogFragment.RESULT_MATH_HARDNESS_LEVEL);
                 bindAlarmHardnessLevel();
                 bindAutoSilenceValue();
+            });
+
+        childFragmentManager.setFragmentResultListener(AlarmMathQuestionCountDialogFragment.REQUEST_KEY, this,
+            (requestKey, bundle) -> {
+                mAlarm.mathQuestionCount = bundle.getInt(AlarmMathQuestionCountDialogFragment.RESULT_COUNT, 1);
+                bindMathQuestionCount();
             });
 
         childFragmentManager.setFragmentResultListener(VolumeCrescendoDurationDialogFragment.REQUEST_KEY, this,
@@ -1800,6 +1816,7 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
             mBinding.snoozeDurationLayout,
             mBinding.missedAlarmRepeatLimitLayout,
             mBinding.mathHardnessLevelLayout,
+            mBinding.mathQuestionCountLayout,
             mBinding.crescendoDurationLayout,
             mBinding.alarmVolumeLayout
         );

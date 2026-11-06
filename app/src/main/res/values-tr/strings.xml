@@ -740,4 +740,6 @@
     <plurals name="expired_timers_deleted">
         <item quantity="other">%d zamanlayıcı silindi</item>
     </plurals>
+    <string name="math_question_count_title">Matematik soru sayısı</string>
+    <string name="math_question_count_invalid">1 ile 2147483647 arasında bir tam sayı girin.</string>
 </resources>

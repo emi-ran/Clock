@@ -1625,4 +1625,6 @@
     <string name="toast_message_backup_error">Backup failed</string>
     <!-- Toast message when restore fails -->
     <string name="toast_message_restore_error">Restore failed</string>
+    <string name="math_question_count_title">Math question count</string>
+    <string name="math_question_count_invalid">Enter a whole number between 1 and 2147483647.</string>
 </resources>
