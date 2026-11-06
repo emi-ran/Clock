@@ -114,6 +114,53 @@ class ClockDatabaseHelper extends SQLiteOpenHelper {
         LogUtils.i("Instance table created");
     }
 
+    private static void createVersion21AlarmsTable(SQLiteDatabase db, String alarmsTableName) {
+        db.execSQL("CREATE TABLE " + alarmsTableName + " (" +
+                ClockContract.AlarmsColumns._ID + " INTEGER PRIMARY KEY," +
+                ClockContract.AlarmsColumns.YEAR + " INTEGER NOT NULL, " +
+                ClockContract.AlarmsColumns.MONTH + " INTEGER NOT NULL, " +
+                ClockContract.AlarmsColumns.DAY + " INTEGER NOT NULL, " +
+                ClockContract.AlarmsColumns.HOUR + " INTEGER NOT NULL, " +
+                ClockContract.AlarmsColumns.MINUTES + " INTEGER NOT NULL, " +
+                ClockContract.AlarmsColumns.DAYS_OF_WEEK + " INTEGER NOT NULL, " +
+                ClockContract.AlarmsColumns.ENABLED + " INTEGER NOT NULL, " +
+                ClockContract.AlarmsColumns.VIBRATE + " INTEGER NOT NULL, " +
+                ClockContract.AlarmsColumns.FLASH + " INTEGER NOT NULL, " +
+                ClockContract.AlarmsColumns.LABEL + " TEXT NOT NULL, " +
+                ClockContract.AlarmsColumns.RINGTONE + " TEXT, " +
+                ClockContract.AlarmsColumns.DELETE_AFTER_USE + " INTEGER NOT NULL DEFAULT 0, " +
+                ClockContract.AlarmsColumns.AUTO_SILENCE_DURATION + " INTEGER NOT NULL DEFAULT 10, " +
+                ClockContract.AlarmsColumns.SNOOZE_DURATION + " INTEGER NOT NULL DEFAULT 10, " +
+                ClockContract.AlarmsColumns.CRESCENDO_DURATION + " INTEGER NOT NULL DEFAULT 0, " +
+                ClockContract.AlarmsColumns.ALARM_VOLUME + " INTEGER NOT NULL DEFAULT 11);");
+
+        LogUtils.i("Alarms Table created");
+    }
+
+    private static void createVersion21InstanceTable(SQLiteDatabase db, String instanceTableName) {
+        db.execSQL("CREATE TABLE " + instanceTableName + " (" +
+                ClockContract.InstancesColumns._ID + " INTEGER PRIMARY KEY," +
+                ClockContract.InstancesColumns.YEAR + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.MONTH + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.DAY + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.HOUR + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.MINUTES + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.VIBRATE + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.FLASH + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.LABEL + " TEXT NOT NULL, " +
+                ClockContract.InstancesColumns.RINGTONE + " TEXT, " +
+                ClockContract.InstancesColumns.ALARM_STATE + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.AUTO_SILENCE_DURATION + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.SNOOZE_DURATION + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.CRESCENDO_DURATION + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.ALARM_VOLUME + " INTEGER NOT NULL, " +
+                ClockContract.InstancesColumns.ALARM_ID + " INTEGER REFERENCES " +
+                ALARMS_TABLE_NAME + "(" + ClockContract.AlarmsColumns._ID + ") " +
+                "ON UPDATE CASCADE ON DELETE CASCADE);");
+
+        LogUtils.i("Instance table created");
+    }
+
     @Override
     public void onCreate(@NonNull SQLiteDatabase db) {
         createCategoriesTable(db);
@@ -180,52 +227,18 @@ class ClockDatabaseHelper extends SQLiteOpenHelper {
 
         // Remove "Dismiss alarm when ringtone ends", "Alarm snooze action" and "Increasing volume"
         if (oldVersion < 21) {
-            LogUtils.i("Copying alarms to temporary table");
-            final String TEMP_ALARMS_TABLE_NAME = ALARMS_TABLE_NAME + "_temp";
-            final String TEMP_INSTANCES_TABLE_NAME = INSTANCES_TABLE_NAME + "_temp";
-            createAlarmsTable(db, TEMP_ALARMS_TABLE_NAME);
-            createInstanceTable(db, TEMP_INSTANCES_TABLE_NAME);
-            final String[] OLD_TABLE_COLUMNS = {
-                ClockContract.AlarmsColumns._ID,
-                ClockContract.AlarmsColumns.YEAR,
-                ClockContract.AlarmsColumns.MONTH,
-                ClockContract.AlarmsColumns.DAY,
-                ClockContract.AlarmsColumns.HOUR,
-                ClockContract.AlarmsColumns.MINUTES,
-                ClockContract.AlarmsColumns.DAYS_OF_WEEK,
-                ClockContract.AlarmsColumns.ENABLED,
-                ClockContract.AlarmsColumns.VIBRATE,
-                ClockContract.AlarmsColumns.FLASH,
-                ClockContract.AlarmsColumns.LABEL,
-                ClockContract.AlarmsColumns.RINGTONE,
-                ClockContract.AlarmsColumns.DELETE_AFTER_USE,
-                ClockContract.AlarmsColumns.AUTO_SILENCE_DURATION,
-                ClockContract.AlarmsColumns.SNOOZE_DURATION,
-                ClockContract.AlarmsColumns.CRESCENDO_DURATION,
-                ClockContract.AlarmsColumns.ALARM_VOLUME
-            };
-
-            try (Cursor cursor = db.query(ALARMS_TABLE_NAME, OLD_TABLE_COLUMNS,
-                null, null, null, null, null)) {
-                final Calendar currentTime = Calendar.getInstance();
-                while (cursor.moveToNext()) {
-                    final Alarm alarm = new Alarm(cursor);
-                    // Save new version of alarm and create alarm instance for it
-                    db.insert(TEMP_ALARMS_TABLE_NAME, null, alarm.createContentValues());
-                    if (alarm.enabled) {
-                        AlarmInstance newInstance = alarm.createInstanceAfter(currentTime);
-                        db.insert(TEMP_INSTANCES_TABLE_NAME, null,
-                            newInstance.createContentValues());
-                    }
-                }
-            }
-            db.execSQL("DROP TABLE IF EXISTS " + ALARMS_TABLE_NAME + ";");
-            db.execSQL("DROP TABLE IF EXISTS " + INSTANCES_TABLE_NAME + ";");
-            db.execSQL("ALTER TABLE " + TEMP_ALARMS_TABLE_NAME + " RENAME TO " + ALARMS_TABLE_NAME + ";");
-            db.execSQL("ALTER TABLE " + TEMP_INSTANCES_TABLE_NAME + " RENAME TO " + INSTANCES_TABLE_NAME + ";");
-
-            LogUtils.i("dismissAlarmWhenRingtoneEnds, alarmSnoozeActions and increasingVolume " +
-                "columns removed for version 21 upgrade.");
+            // Rebuild with the historical v21 schema: modern Alarm(Cursor) expects
+            // columns that did not exist yet, and later migrations add them.
+            final String tempAlarms = ALARMS_TABLE_NAME + "_temp";
+            final String tempInstances = INSTANCES_TABLE_NAME + "_temp";
+            createVersion21AlarmsTable(db, tempAlarms);
+            createVersion21InstanceTable(db, tempInstances);
+            copyCommonColumns(db, ALARMS_TABLE_NAME, tempAlarms);
+            copyCommonColumns(db, INSTANCES_TABLE_NAME, tempInstances);
+            db.execSQL("DROP TABLE " + INSTANCES_TABLE_NAME);
+            db.execSQL("DROP TABLE " + ALARMS_TABLE_NAME);
+            db.execSQL("ALTER TABLE " + tempAlarms + " RENAME TO " + ALARMS_TABLE_NAME);
+            db.execSQL("ALTER TABLE " + tempInstances + " RENAME TO " + INSTANCES_TABLE_NAME);
         }
 
         if (oldVersion < 22) {
@@ -349,6 +362,27 @@ class ClockDatabaseHelper extends SQLiteOpenHelper {
 
             LogUtils.i("categoryId column and categories table added for version 30 upgrade.");
         }
+    }
+
+    // Both tables use known, internal column names. Fail rather than silently lose rows.
+    private static void copyCommonColumns(SQLiteDatabase db, String source, String target) {
+        final java.util.Set<String> sourceColumns = new java.util.HashSet<>();
+        try (Cursor cursor = db.rawQuery("PRAGMA table_info(" + source + ")", null)) {
+            while (cursor.moveToNext()) {
+                sourceColumns.add(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+            }
+        }
+        final java.util.List<String> columns = new java.util.ArrayList<>();
+        try (Cursor cursor = db.rawQuery("PRAGMA table_info(" + target + ")", null)) {
+            while (cursor.moveToNext()) {
+                String column = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                if (sourceColumns.contains(column)) {
+                    columns.add("\"" + column.replace("\"", "\"\"") + "\"");
+                }
+            }
+        }
+        String names = android.text.TextUtils.join(",", columns);
+        db.execSQL("INSERT INTO " + target + " (" + names + ") SELECT " + names + " FROM " + source);
     }
 
     long fixAlarmInsert(@Nullable ContentValues values) {
