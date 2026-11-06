@@ -273,7 +273,8 @@ public class AlarmActivity extends BaseActivity implements View.OnClickListener,
             @Override public void onFallback() {
                 if (mAlarmHandled || isFinishing()) return;
                 mFallbackMathController.requestMissionAction(MISSION_ACTION_DISMISS,
-                    MATH_HARDNESS_LEVEL_HARD, Math.max(3, mAlarm.mathQuestionCount + 1), mMissionRandom);
+                    MATH_HARDNESS_LEVEL_HARD, Math.max(3, mAlarm.mathQuestionCount == Integer.MAX_VALUE
+                        ? Integer.MAX_VALUE : mAlarm.mathQuestionCount + 1), mMissionRandom);
             }
         });
 

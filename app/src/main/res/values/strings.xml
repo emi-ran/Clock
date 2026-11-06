@@ -1632,4 +1632,8 @@
     <string name="barcode_mission_scan">Scan barcode</string>
     <string name="barcode_mission_remove">Remove barcode</string>
     <string name="barcode_mission_prompt">Scan a barcode to dismiss the alarm</string>
+    <string name="barcode_mission_instruction">Scan the barcode assigned to this alarm. If scanning is unavailable, use the math alternative.</string>
+    <string name="barcode_mission_fallback">Use harder math</string>
+    <string name="barcode_mission_mismatch">That barcode does not match. Try again or use harder math.</string>
+    <string name="barcode_mission_enroll_prompt">Scan the barcode to assign to this alarm</string>
 </resources>

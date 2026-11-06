@@ -747,4 +747,8 @@
     <string name="barcode_mission_scan">Barkodu tara</string>
     <string name="barcode_mission_remove">Barkodu kaldır</string>
     <string name="barcode_mission_prompt">Alarmı kapatmak için barkodu tara</string>
+    <string name="barcode_mission_instruction">Bu alarma atanan barkodu tara. Tarama kullanılamıyorsa matematik alternatifini kullan.</string>
+    <string name="barcode_mission_fallback">Daha zor matematik kullan</string>
+    <string name="barcode_mission_mismatch">Barkod eşleşmedi. Tekrar dene veya daha zor matematik kullan.</string>
+    <string name="barcode_mission_enroll_prompt">Bu alarma atanacak barkodu tara</string>
 </resources>

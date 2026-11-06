@@ -13,7 +13,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.best.deskclock.R;
 import com.google.zxing.ResultPoint;
+import com.journeyapps.barcodescanner.CameraPreview;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.BarcodeView;
@@ -68,16 +70,23 @@ final class BarcodeMissionScanner {
             LinearLayout layout = new LinearLayout(activity);
             layout.setOrientation(LinearLayout.VERTICAL);
             TextView instruction = new TextView(activity);
-            instruction.setText("Scan the barcode assigned to this alarm. If scanning is unavailable, use the math alternative.");
+            instruction.setText(R.string.barcode_mission_instruction);
             int padding = (int) (16 * activity.getResources().getDisplayMetrics().density);
             instruction.setPadding(padding, padding, padding, padding);
             layout.addView(instruction);
             scanner = new BarcodeView(activity);
+            scanner.addStateListener(new CameraPreview.StateListener() {
+                @Override public void previewSized() { }
+                @Override public void previewStarted() { }
+                @Override public void previewStopped() { }
+                @Override public void cameraError(Exception error) { fallback(); }
+                @Override public void cameraClosed() { }
+            });
             layout.addView(scanner, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 (int) (300 * activity.getResources().getDisplayMetrics().density)));
-            dialog = new AlertDialog.Builder(activity).setTitle("Scan barcode")
-                .setView(layout).setNegativeButton("Cancel", (d, w) -> close())
-                .setNeutralButton("Use harder math", (d, w) -> fallback()).create();
+            dialog = new AlertDialog.Builder(activity).setTitle(R.string.barcode_mission_scan)
+                .setView(layout).setNegativeButton(android.R.string.cancel, (d, w) -> close())
+                .setNeutralButton(R.string.barcode_mission_fallback, (d, w) -> fallback()).create();
             dialog.setOnCancelListener(d -> close());
             dialog.setOnDismissListener(d -> { if (active) close(); });
             dialog.show();
@@ -88,7 +97,7 @@ final class BarcodeMissionScanner {
                         close();
                         callback.onMatched();
                     } else if (active) {
-                        instruction.setText("That barcode does not match. Try again or use harder math.");
+                        instruction.setText(R.string.barcode_mission_mismatch);
                     }
                 }
                 @Override public void possibleResultPoints(List<ResultPoint> points) { }

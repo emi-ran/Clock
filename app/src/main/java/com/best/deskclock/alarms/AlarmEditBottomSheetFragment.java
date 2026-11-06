@@ -209,7 +209,7 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
                     .setTitle(R.string.barcode_mission_title)
                     .setPositiveButton(R.string.barcode_mission_scan, (d, which) -> {
                         com.journeyapps.barcodescanner.ScanOptions options = new com.journeyapps.barcodescanner.ScanOptions();
-                        options.setPrompt(getString(R.string.barcode_mission_prompt));
+                        options.setPrompt(getString(R.string.barcode_mission_enroll_prompt));
                         options.setBeepEnabled(false);
                         mBarcodeScanner.launch(options);
                     });

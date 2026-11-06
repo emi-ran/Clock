@@ -38,6 +38,7 @@ import com.best.deskclock.R;
 import com.best.deskclock.base.AlarmAlertWakeLock;
 import com.best.deskclock.data.SettingsDAO;
 import com.best.deskclock.events.Events;
+import com.best.deskclock.provider.Alarm;
 import com.best.deskclock.provider.AlarmInstance;
 import com.best.deskclock.ringtone.RingtonePlayer;
 import com.best.deskclock.utils.DeviceUtils;
@@ -172,6 +173,17 @@ public class AlarmService extends Service {
 
             if (mIsBound) {
                 LogUtils.i("AlarmActivity bound; AlarmService no-op");
+                return;
+            }
+
+            // External controls must not bypass a configured mission when the UI is unbound.
+            Alarm parent = Alarm.getAlarm(context.getContentResolver(), mCurrentAlarm.mAlarmId);
+            String hardness = SettingsDAO.isPerAlarmMathHardnessLevelDisabled(mPrefs) || parent == null
+                ? SettingsDAO.getAlarmMathHardnessLevel(mPrefs) : parent.mathHardnessLevel;
+            if ((parent != null && ((parent.barcodeFormat != null && !parent.barcodeFormat.isEmpty())
+                    || (parent.barcodeValue != null && !parent.barcodeValue.isEmpty()))) ||
+                !com.best.deskclock.settings.PreferencesDefaultValues.DEFAULT_MATH_HARDNESS_LEVEL.equals(hardness)) {
+                LogUtils.i("Ignoring external alarm action while a mission is configured");
                 return;
             }
 

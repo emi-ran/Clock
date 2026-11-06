@@ -429,7 +429,9 @@ public final class AlarmStateManager extends BroadcastReceiver {
         String mathHardnessLevel = SettingsDAO.isPerAlarmMathHardnessLevelDisabled(prefs) || alarm == null
             ? SettingsDAO.getAlarmMathHardnessLevel(prefs)
             : alarm.mathHardnessLevel;
-        boolean hasMathMission = !mathHardnessLevel.equals(DEFAULT_MATH_HARDNESS_LEVEL);
+        boolean hasMathMission = !DEFAULT_MATH_HARDNESS_LEVEL.equals(mathHardnessLevel)
+            || (alarm != null && ((alarm.barcodeFormat != null && !alarm.barcodeFormat.isEmpty())
+                || (alarm.barcodeValue != null && !alarm.barcodeValue.isEmpty())));
 
         Calendar timeout = instance.getTimeout(context, hasMathMission);
         if (timeout != null) {
@@ -788,7 +790,9 @@ public final class AlarmStateManager extends BroadcastReceiver {
         String mathHardnessLevel = SettingsDAO.isPerAlarmMathHardnessLevelDisabled(prefs) || alarm == null
             ? SettingsDAO.getAlarmMathHardnessLevel(prefs)
             : alarm.mathHardnessLevel;
-        boolean hasMathMission = !mathHardnessLevel.equals(DEFAULT_MATH_HARDNESS_LEVEL);
+        boolean hasMathMission = !DEFAULT_MATH_HARDNESS_LEVEL.equals(mathHardnessLevel)
+            || (alarm != null && ((alarm.barcodeFormat != null && !alarm.barcodeFormat.isEmpty())
+                || (alarm.barcodeValue != null && !alarm.barcodeValue.isEmpty())));
 
         final Calendar timeoutTime = instance.getTimeout(context, hasMathMission);
         final int notificationReminderTime = SettingsDAO.getAlarmNotificationReminderTime(prefs);
