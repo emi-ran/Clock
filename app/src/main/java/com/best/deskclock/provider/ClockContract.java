@@ -230,6 +230,7 @@ public final class ClockContract {
          * Type: STRING
          */
         String MATH_HARDNESS_LEVEL = "mathHardnessLevel";
+        String MATH_QUESTION_COUNT = "mathQuestionCount";
 
         /**
          * True if alarm is locked

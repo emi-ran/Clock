@@ -229,6 +229,7 @@ public class BackupAndRestoreManager {
             alarmObject.put("backgroundImage", alarm.backgroundImage);
             alarmObject.put("blurIntensity", alarm.blurIntensity);
             alarmObject.put("mathHardnessLevel", alarm.mathHardnessLevel);
+            alarmObject.put("mathQuestionCount", alarm.mathQuestionCount);
             alarmObject.put("lock", alarm.lock);
             alarmObject.put("timeZone", alarm.timeZone);
 
@@ -573,6 +574,7 @@ public class BackupAndRestoreManager {
             missedAlarmRepeatLimit, crescendoDuration, alarmVolume, manualSortOrder, pauseStartDate, pauseEndDate, newBackgroundImage,
             blurIntensity, mathHardnessLevel, lock, timeZone, categoryIds);
 
+        restoredAlarm.mathQuestionCount = Math.max(1, alarmObject.optInt("mathQuestionCount", 1));
         restoredAlarm.addAlarm(contentResolver);
 
         if (restoredAlarm.enabled) {

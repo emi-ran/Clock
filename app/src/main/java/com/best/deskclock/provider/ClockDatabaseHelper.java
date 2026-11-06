@@ -31,7 +31,7 @@ class ClockDatabaseHelper extends SQLiteOpenHelper {
     static final String INSTANCES_TABLE_NAME = "alarm_instances";
     static final String CATEGORIES_TABLE_NAME = "alarm_categories";
 
-    private static final int DATABASE_VERSION = 30;
+    private static final int DATABASE_VERSION = 31;
     private static final int MINIMUM_SUPPORTED_VERSION = 15;
 
     public ClockDatabaseHelper(@Nullable Context context) {
@@ -77,7 +77,8 @@ class ClockDatabaseHelper extends SQLiteOpenHelper {
             ClockContract.AlarmsColumns.MATH_HARDNESS_LEVEL + " TEXT NOT NULL DEFAULT 'off', " +
             ClockContract.AlarmsColumns.LOCK + " INTEGER NOT NULL DEFAULT 0, " +
             ClockContract.AlarmsColumns.TIMEZONE + " TEXT DEFAULT '', " +
-            ClockContract.AlarmsColumns.CATEGORY_IDS + " TEXT NOT NULL DEFAULT ',0,');");
+            ClockContract.AlarmsColumns.CATEGORY_IDS + " TEXT NOT NULL DEFAULT ',0,', " +
+            ClockContract.AlarmsColumns.MATH_QUESTION_COUNT + " INTEGER NOT NULL DEFAULT 1);");
 
         LogUtils.i("Alarms Table created");
     }
@@ -326,6 +327,11 @@ class ClockDatabaseHelper extends SQLiteOpenHelper {
                 + " TEXT DEFAULT '';");
 
             LogUtils.i("timezone column added for version 29 upgrade.");
+        }
+
+        if (oldVersion < 31) {
+            db.execSQL("ALTER TABLE " + ALARMS_TABLE_NAME + " ADD COLUMN " +
+                ClockContract.AlarmsColumns.MATH_QUESTION_COUNT + " INTEGER NOT NULL DEFAULT 1;");
         }
 
         if (oldVersion < 30) {

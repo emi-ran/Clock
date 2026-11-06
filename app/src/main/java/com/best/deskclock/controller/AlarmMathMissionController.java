@@ -11,8 +11,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,11 +36,12 @@ public class AlarmMathMissionController {
         mGeneralBoldTypeface = generalBoldTypeface;
     }
 
-    public void requestMissionAction(int action, @NonNull String mathHardnessLevel, @NonNull Random random) {
+    public void requestMissionAction(int action, @NonNull String mathHardnessLevel, int questionCount, @NonNull Random random) {
         if (mCurrentDialog != null && mCurrentDialog.isShowing()) {
             return;
         }
 
+        final int[] remaining = { Math.max(1, questionCount) };
         final AlarmMathChallenge[] activeChallenge = { AlarmMathChallenge.create(mathHardnessLevel, random) };
 
         final AlarmMathChallengeDialogBinding binding = AlarmMathChallengeDialogBinding.inflate(LayoutInflater.from(mContext));
@@ -95,11 +94,11 @@ public class AlarmMathMissionController {
                 alertDialog.setCancelable(false);
 
                 alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v ->
-                    validateAnswer(binding.answerInput, activeChallenge[0], binding.mathChallengeError, alertDialog, action));
+                    validateAnswer(binding, activeChallenge, remaining, mathHardnessLevel, random, alertDialog, action));
 
                 binding.answerInput.setOnEditorActionListener((v, actionId, event) -> {
                     if (actionId == EditorInfo.IME_ACTION_DONE) {
-                        validateAnswer(binding.answerInput, activeChallenge[0], binding.mathChallengeError, alertDialog, action);
+                        validateAnswer(binding, activeChallenge, remaining, mathHardnessLevel, random, alertDialog, action);
 
                         return true;
                     }
@@ -125,14 +124,21 @@ public class AlarmMathMissionController {
         mCurrentDialog.show();
     }
 
-    private void validateAnswer(@NonNull EditText answerInput, @NonNull AlarmMathChallenge challenge, @NonNull TextView mathChallengeError,
+    private void validateAnswer(@NonNull AlarmMathChallengeDialogBinding binding,
+                                @NonNull AlarmMathChallenge[] challenge, @NonNull int[] remaining,
+                                @NonNull String hardness, @NonNull Random random,
                                 @NonNull AlertDialog dialog, int action) {
-
-        final String answerText = answerInput.getText() == null ? "" : answerInput.getText().toString().trim();
-
-        if (!challenge.matches(answerText)) {
-            mathChallengeError.setVisibility(VISIBLE);
-            answerInput.selectAll();
+        final String answer = binding.answerInput.getText() == null ? "" : binding.answerInput.getText().toString().trim();
+        if (!challenge[0].matches(answer)) {
+            binding.mathChallengeError.setVisibility(VISIBLE);
+            binding.answerInput.selectAll();
+        } else if (--remaining[0] > 0) {
+            challenge[0] = AlarmMathChallenge.create(hardness, random);
+            binding.mathChallengeText.setText(mContext.getString(R.string.math_challenge_prompt,
+                challenge[0].left(), challenge[0].right()));
+            binding.answerInput.setText("");
+            binding.mathChallengeError.setVisibility(INVISIBLE);
+            binding.answerInput.requestFocus();
         } else {
             dialog.dismiss();
             mCurrentDialog = null;

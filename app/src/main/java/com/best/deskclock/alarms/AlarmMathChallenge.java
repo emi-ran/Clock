@@ -46,8 +46,8 @@ public record AlarmMathChallenge(int left, int right) {
                 range = 450;
             }
             default -> {
-                min = 0;
-                range = 0;
+                min = 1;
+                range = 20;
             }
         }
 
