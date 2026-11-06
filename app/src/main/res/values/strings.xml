@@ -1627,4 +1627,9 @@
     <string name="toast_message_restore_error">Restore failed</string>
     <string name="math_question_count_title">Math question count</string>
     <string name="math_question_count_invalid">Enter a whole number between 1 and 2147483647.</string>
+    <string name="barcode_mission_title">Barcode mission</string>
+    <string name="barcode_mission_set">Barcode enrolled</string>
+    <string name="barcode_mission_scan">Scan barcode</string>
+    <string name="barcode_mission_remove">Remove barcode</string>
+    <string name="barcode_mission_prompt">Scan a barcode to dismiss the alarm</string>
 </resources>

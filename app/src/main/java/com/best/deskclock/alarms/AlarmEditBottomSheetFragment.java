@@ -191,6 +191,39 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
         Utils.showDialogFragment(manager, fragment, TAG);
     }
 
+    private final ActivityResultLauncher<com.journeyapps.barcodescanner.ScanOptions> mBarcodeScanner =
+        registerForActivityResult(new com.journeyapps.barcodescanner.ScanContract(), result -> {
+            if (mAlarm != null && result.getContents() != null && !result.getContents().isEmpty()
+                    && result.getFormatName() != null && !result.getFormatName().isEmpty()) {
+                mAlarm.barcodeFormat = result.getFormatName();
+                mAlarm.barcodeValue = result.getContents();
+                if (mBinding != null) bindBarcodeMission();
+            }
+        });
+
+    private void bindBarcodeMission() {
+        mBinding.barcodeMissionValue.setText(mAlarm.hasBarcodeMission() ? R.string.barcode_mission_set : R.string.label_off);
+        mBinding.barcodeMissionLayout.setOnClickListener(v -> {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder dialog =
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.barcode_mission_title)
+                    .setPositiveButton(R.string.barcode_mission_scan, (d, which) -> {
+                        com.journeyapps.barcodescanner.ScanOptions options = new com.journeyapps.barcodescanner.ScanOptions();
+                        options.setPrompt(getString(R.string.barcode_mission_prompt));
+                        options.setBeepEnabled(false);
+                        mBarcodeScanner.launch(options);
+                    });
+            if (mAlarm.hasBarcodeMission()) {
+                dialog.setNegativeButton(R.string.barcode_mission_remove, (d, which) -> {
+                    mAlarm.barcodeFormat = "";
+                    mAlarm.barcodeValue = "";
+                    bindBarcodeMission();
+                });
+            }
+            dialog.show();
+        });
+    }
+
     private final ActivityResultLauncher<Intent> mRingtonePickerLauncher = registerForActivityResult(
         new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
@@ -526,6 +559,7 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
         bindMissedAlarmRepeatLimit();
         bindAlarmHardnessLevel();
         bindMathQuestionCount();
+        bindBarcodeMission();
         bindCrescendoDuration();
         bindAlarmVolume();
         bindSpace();
@@ -1817,6 +1851,7 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
             mBinding.missedAlarmRepeatLimitLayout,
             mBinding.mathHardnessLevelLayout,
             mBinding.mathQuestionCountLayout,
+            mBinding.barcodeMissionLayout,
             mBinding.crescendoDurationLayout,
             mBinding.alarmVolumeLayout
         );

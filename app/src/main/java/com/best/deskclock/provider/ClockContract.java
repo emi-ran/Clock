@@ -231,6 +231,8 @@ public final class ClockContract {
          */
         String MATH_HARDNESS_LEVEL = "mathHardnessLevel";
         String MATH_QUESTION_COUNT = "mathQuestionCount";
+        String BARCODE_FORMAT = "barcodeFormat";
+        String BARCODE_VALUE = "barcodeValue";
 
         /**
          * True if alarm is locked

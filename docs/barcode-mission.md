@@ -1,0 +1,5 @@
+# Barcode mission integration
+
+An alarm has public `barcodeFormat` and `barcodeValue` strings. `hasBarcodeMission()` is true only when both are nonempty. The format is the ZXing `ScanIntentResult.getFormatName()` value and the value is the exact `getContents()` text, without normalization. To validate, call `BarcodeMission.matches(alarm.barcodeFormat, alarm.barcodeValue, result.getFormatName(), result.getContents())`. Retrieve the parent `Alarm` for the ringing instance; the barcode is not copied onto `AlarmInstance`. Empty fields disable the mission. Both values persist through alarm copy, parcel, database and JSON backup; old databases and backups default to empty.
+
+Enrollment uses the embedded ZXing `ScanContract`; cancellation or a failed/empty scan retains the previous barcode. Saving the alarm commits enrollment. The scanner requests camera permission; no network is required. Barcode values are stored in plaintext in the database and backup, so backups should be handled as sensitive.

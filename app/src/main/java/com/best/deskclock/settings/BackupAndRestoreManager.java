@@ -230,6 +230,8 @@ public class BackupAndRestoreManager {
             alarmObject.put("blurIntensity", alarm.blurIntensity);
             alarmObject.put("mathHardnessLevel", alarm.mathHardnessLevel);
             alarmObject.put("mathQuestionCount", alarm.mathQuestionCount);
+            alarmObject.put("barcodeFormat", alarm.barcodeFormat);
+            alarmObject.put("barcodeValue", alarm.barcodeValue);
             alarmObject.put("lock", alarm.lock);
             alarmObject.put("timeZone", alarm.timeZone);
 
@@ -575,6 +577,8 @@ public class BackupAndRestoreManager {
             blurIntensity, mathHardnessLevel, lock, timeZone, categoryIds);
 
         restoredAlarm.mathQuestionCount = Math.max(1, alarmObject.optInt("mathQuestionCount", 1));
+        restoredAlarm.barcodeFormat = alarmObject.optString("barcodeFormat", "");
+        restoredAlarm.barcodeValue = alarmObject.optString("barcodeValue", "");
         restoredAlarm.addAlarm(contentResolver);
 
         if (restoredAlarm.enabled) {
