@@ -1626,7 +1626,7 @@
     <!-- Toast message when restore fails -->
     <string name="toast_message_restore_error">Restore failed</string>
     <string name="math_question_count_title">Math question count</string>
-    <string name="math_question_count_invalid">Enter a whole number between 1 and 2147483647.</string>
+    <string name="math_question_count_invalid">Enter a whole number between 1 and 10.</string>
     <string name="barcode_mission_title">Barcode mission</string>
     <string name="barcode_mission_set">Barcode enrolled</string>
     <string name="barcode_mission_scan">Scan barcode</string>
@@ -1636,4 +1636,6 @@
     <string name="barcode_mission_fallback">Use harder math</string>
     <string name="barcode_mission_mismatch">That barcode does not match. Try again or use harder math.</string>
     <string name="barcode_mission_enroll_prompt">Scan the barcode to assign to this alarm</string>
+    <string name="barcode_mission_enroll_instruction">Choose a barcode you can access when the alarm rings. If scanning fails, you can use harder math instead.</string>
+    <string name="barcode_mission_camera_permission">Camera permission is needed to scan a barcode. Enable it in app settings and try again.</string>
 </resources>

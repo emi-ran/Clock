@@ -4,6 +4,8 @@
 
 package com.best.deskclock.settings;
 
+import com.best.deskclock.alarms.MathQuestionCount;
+
 import static android.media.AudioManager.STREAM_ALARM;
 import static com.best.deskclock.data.CustomRingtoneDAO.NEXT_RINGTONE_ID;
 import static com.best.deskclock.data.CustomRingtoneDAO.RINGTONE_IDS;
@@ -229,7 +231,7 @@ public class BackupAndRestoreManager {
             alarmObject.put("backgroundImage", alarm.backgroundImage);
             alarmObject.put("blurIntensity", alarm.blurIntensity);
             alarmObject.put("mathHardnessLevel", alarm.mathHardnessLevel);
-            alarmObject.put("mathQuestionCount", alarm.mathQuestionCount);
+            alarmObject.put("mathQuestionCount", MathQuestionCount.clamp(alarm.mathQuestionCount));
             alarmObject.put("barcodeFormat", alarm.barcodeFormat);
             alarmObject.put("barcodeValue", alarm.barcodeValue);
             alarmObject.put("lock", alarm.lock);
@@ -576,7 +578,7 @@ public class BackupAndRestoreManager {
             missedAlarmRepeatLimit, crescendoDuration, alarmVolume, manualSortOrder, pauseStartDate, pauseEndDate, newBackgroundImage,
             blurIntensity, mathHardnessLevel, lock, timeZone, categoryIds);
 
-        restoredAlarm.mathQuestionCount = Math.max(1, alarmObject.optInt("mathQuestionCount", 1));
+        restoredAlarm.mathQuestionCount = MathQuestionCount.clamp(alarmObject.optInt("mathQuestionCount", 1));
         restoredAlarm.barcodeFormat = alarmObject.optString("barcodeFormat", "");
         restoredAlarm.barcodeValue = alarmObject.optString("barcodeValue", "");
         restoredAlarm.addAlarm(contentResolver);

@@ -207,10 +207,15 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
             com.google.android.material.dialog.MaterialAlertDialogBuilder dialog =
                 new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                     .setTitle(R.string.barcode_mission_title)
+                    .setMessage(R.string.barcode_mission_enroll_instruction)
+                    .setNeutralButton(android.R.string.cancel, null)
                     .setPositiveButton(R.string.barcode_mission_scan, (d, which) -> {
                         com.journeyapps.barcodescanner.ScanOptions options = new com.journeyapps.barcodescanner.ScanOptions();
                         options.setPrompt(getString(R.string.barcode_mission_enroll_prompt));
                         options.setBeepEnabled(false);
+                        options.addExtra("SHOW_MISSING_CAMERA_PERMISSION_DIALOG", true);
+                        options.addExtra("MISSING_CAMERA_PERMISSION_DIALOG_MESSAGE",
+                            getString(R.string.barcode_mission_camera_permission));
                         mBarcodeScanner.launch(options);
                     });
             if (mAlarm.hasBarcodeMission()) {
@@ -1458,7 +1463,7 @@ public class AlarmEditBottomSheetFragment extends BottomSheetDialogFragment {
 
         childFragmentManager.setFragmentResultListener(AlarmMathQuestionCountDialogFragment.REQUEST_KEY, this,
             (requestKey, bundle) -> {
-                mAlarm.mathQuestionCount = bundle.getInt(AlarmMathQuestionCountDialogFragment.RESULT_COUNT, 1);
+                mAlarm.mathQuestionCount = MathQuestionCount.clamp(bundle.getInt(AlarmMathQuestionCountDialogFragment.RESULT_COUNT, 1));
                 bindMathQuestionCount();
             });
 

@@ -6,6 +6,8 @@
 
 package com.best.deskclock.provider;
 
+import com.best.deskclock.alarms.MathQuestionCount;
+
 import static com.best.deskclock.settings.PreferencesDefaultValues.*;
 
 import android.content.ContentResolver;
@@ -354,7 +356,7 @@ public final class Alarm implements Parcelable, ClockContract.AlarmsColumns {
         this.backgroundImage = original.backgroundImage;
         this.blurIntensity = original.blurIntensity;
         this.mathHardnessLevel = original.mathHardnessLevel;
-        this.mathQuestionCount = original.mathQuestionCount;
+        this.mathQuestionCount = MathQuestionCount.clamp(original.mathQuestionCount);
         this.barcodeFormat = original.barcodeFormat;
         this.barcodeValue = original.barcodeValue;
         this.lock = original.lock;
@@ -388,7 +390,7 @@ public final class Alarm implements Parcelable, ClockContract.AlarmsColumns {
         backgroundImage = c.getString(BACKGROUND_IMAGE_INDEX);
         blurIntensity = c.getInt(BLUR_INTENSITY_INDEX);
         mathHardnessLevel = c.getString(MATH_HARDNESS_LEVEL_INDEX);
-        mathQuestionCount = Math.max(1, c.getInt(MATH_QUESTION_COUNT_INDEX));
+        mathQuestionCount = MathQuestionCount.clamp(c.getInt(MATH_QUESTION_COUNT_INDEX));
         barcodeFormat = c.getString(BARCODE_FORMAT_INDEX);
         barcodeValue = c.getString(BARCODE_VALUE_INDEX);
         lock = c.getInt(LOCK_INDEX) == 1;
@@ -439,7 +441,7 @@ public final class Alarm implements Parcelable, ClockContract.AlarmsColumns {
         lock = p.readInt() == 1;
         timeZone = p.readString();
         categoryIds = p.createLongArray();
-        mathQuestionCount = Math.max(1, p.readInt());
+        mathQuestionCount = MathQuestionCount.clamp(p.readInt());
         barcodeFormat = p.readString();
         barcodeValue = p.readString();
     }
@@ -475,7 +477,7 @@ public final class Alarm implements Parcelable, ClockContract.AlarmsColumns {
         values.put(BACKGROUND_IMAGE, backgroundImage);
         values.put(BLUR_INTENSITY, blurIntensity);
         values.put(MATH_HARDNESS_LEVEL, mathHardnessLevel);
-        values.put(MATH_QUESTION_COUNT, Math.max(1, mathQuestionCount));
+        values.put(MATH_QUESTION_COUNT, MathQuestionCount.clamp(mathQuestionCount));
         values.put(BARCODE_FORMAT, barcodeFormat == null ? "" : barcodeFormat);
         values.put(BARCODE_VALUE, barcodeValue == null ? "" : barcodeValue);
         values.put(LOCK, lock ? 1 : 0);
@@ -522,7 +524,7 @@ public final class Alarm implements Parcelable, ClockContract.AlarmsColumns {
         p.writeInt(lock ? 1 : 0);
         p.writeString(timeZone);
         p.writeLongArray(categoryIds);
-        p.writeInt(mathQuestionCount);
+        p.writeInt(MathQuestionCount.clamp(mathQuestionCount));
         p.writeString(barcodeFormat);
         p.writeString(barcodeValue);
     }

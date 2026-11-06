@@ -19,6 +19,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.best.deskclock.R;
 import com.best.deskclock.alarms.AlarmActivity;
 import com.best.deskclock.alarms.AlarmMathChallenge;
+import com.best.deskclock.alarms.MathQuestionCount;
 import com.best.deskclock.databinding.AlarmMathChallengeDialogBinding;
 import com.best.deskclock.uicomponents.CustomDialog;
 
@@ -41,7 +42,7 @@ public class AlarmMathMissionController {
             return;
         }
 
-        final int[] remaining = { Math.max(1, questionCount) };
+        final int[] remaining = { MathQuestionCount.clamp(questionCount) };
         final AlarmMathChallenge[] activeChallenge = { AlarmMathChallenge.create(mathHardnessLevel, random) };
 
         final AlarmMathChallengeDialogBinding binding = AlarmMathChallengeDialogBinding.inflate(LayoutInflater.from(mContext));

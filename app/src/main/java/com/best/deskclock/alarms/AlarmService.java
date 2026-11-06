@@ -180,9 +180,10 @@ public class AlarmService extends Service {
             Alarm parent = Alarm.getAlarm(context.getContentResolver(), mCurrentAlarm.mAlarmId);
             String hardness = SettingsDAO.isPerAlarmMathHardnessLevelDisabled(mPrefs) || parent == null
                 ? SettingsDAO.getAlarmMathHardnessLevel(mPrefs) : parent.mathHardnessLevel;
-            if ((parent != null && ((parent.barcodeFormat != null && !parent.barcodeFormat.isEmpty())
+            if ((ALARM_SNOOZE_ACTION.equals(action) || ALARM_DISMISS_ACTION.equals(action)) &&
+                ((parent != null && ((parent.barcodeFormat != null && !parent.barcodeFormat.isEmpty())
                     || (parent.barcodeValue != null && !parent.barcodeValue.isEmpty()))) ||
-                !com.best.deskclock.settings.PreferencesDefaultValues.DEFAULT_MATH_HARDNESS_LEVEL.equals(hardness)) {
+                !com.best.deskclock.settings.PreferencesDefaultValues.DEFAULT_MATH_HARDNESS_LEVEL.equals(hardness))) {
                 LogUtils.i("Ignoring external alarm action while a mission is configured");
                 return;
             }

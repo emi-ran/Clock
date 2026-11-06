@@ -19,6 +19,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.best.deskclock.R;
+import com.best.deskclock.alarms.MathQuestionCount;
 import com.best.deskclock.data.SettingsDAO;
 import com.best.deskclock.uicomponents.CustomDialog;
 import com.best.deskclock.utils.ThemeUtils;
@@ -75,7 +76,7 @@ public class AlarmMathQuestionCountDialogFragment extends DialogFragment {
             dialog -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
                 try {
                     int count = Integer.parseInt(mInput.getText().toString());
-                    if (count < 1) throw new NumberFormatException();
+                    if (count < 1 || count > MathQuestionCount.MAX) throw new NumberFormatException();
                     Bundle result = new Bundle();
                     result.putInt(RESULT_COUNT, count);
                     getParentFragmentManager().setFragmentResult(REQUEST_KEY, result);

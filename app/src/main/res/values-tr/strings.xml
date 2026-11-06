@@ -741,7 +741,7 @@
         <item quantity="other">%d zamanlayıcı silindi</item>
     </plurals>
     <string name="math_question_count_title">Matematik soru sayısı</string>
-    <string name="math_question_count_invalid">1 ile 2147483647 arasında bir tam sayı girin.</string>
+    <string name="math_question_count_invalid">1 ile 10 arasında bir tam sayı girin.</string>
     <string name="barcode_mission_title">Barkod görevi</string>
     <string name="barcode_mission_set">Barkod kaydedildi</string>
     <string name="barcode_mission_scan">Barkodu tara</string>
@@ -751,4 +751,9 @@
     <string name="barcode_mission_fallback">Daha zor matematik kullan</string>
     <string name="barcode_mission_mismatch">Barkod eşleşmedi. Tekrar dene veya daha zor matematik kullan.</string>
     <string name="barcode_mission_enroll_prompt">Bu alarma atanacak barkodu tara</string>
+    <string name="barcode_mission_enroll_instruction">Alarm çaldığında erişebileceğin bir barkod seç. Tarama başarısız olursa daha zor matematik soruları kullanabilirsin.</string>
+    <string name="zxing_button_ok">Tamam</string>
+    <string name="zxing_msg_camera_framework_bug">Kamera açılamadı. Lütfen cihazını yeniden başlatıp tekrar dene.</string>
+    <string name="zxing_msg_default_status">Barkodu tarama alanına yerleştir</string>
+    <string name="barcode_mission_camera_permission">Barkod taramak için kamera izni gereklidir. Uygulama ayarlarından izin verip tekrar dene.</string>
 </resources>
