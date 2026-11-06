@@ -14,6 +14,7 @@ import static com.best.deskclock.settings.PreferencesDefaultValues.ALARM_SNOOZE_
 import static com.best.deskclock.settings.PreferencesDefaultValues.AMOLED_DARK_MODE;
 import static com.best.deskclock.settings.PreferencesDefaultValues.DEFAULT_BLUR_INTENSITY;
 import static com.best.deskclock.settings.PreferencesDefaultValues.DEFAULT_MATH_HARDNESS_LEVEL;
+import static com.best.deskclock.settings.PreferencesDefaultValues.MATH_HARDNESS_LEVEL_HARD;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -173,6 +174,8 @@ public class AlarmActivity extends BaseActivity implements View.OnClickListener,
 
     private final Random mMissionRandom = new Random();
     private AlarmMathMissionController mMathMissionController;
+    private BarcodeMissionScanner mBarcodeScanner;
+    private AlarmMathMissionController mFallbackMathController;
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -261,12 +264,18 @@ public class AlarmActivity extends BaseActivity implements View.OnClickListener,
         getWindow().setBackgroundDrawable(new ColorDrawable(alarmBackgroundColor));
 
         mMathMissionController = new AlarmMathMissionController(this, action -> {
-            if (action == MISSION_ACTION_SNOOZE) {
-                snooze();
-            } else {
-                dismiss();
-            }
+            afterMathMission(action);
         }, getGeneralBoldTypeface());
+        mFallbackMathController = new AlarmMathMissionController(this,
+            this::finishMissionAction, getGeneralBoldTypeface());
+        mBarcodeScanner = new BarcodeMissionScanner(this, new BarcodeMissionScanner.Callback() {
+            @Override public void onMatched() { finishMissionAction(MISSION_ACTION_DISMISS); }
+            @Override public void onFallback() {
+                if (mAlarmHandled || isFinishing()) return;
+                mFallbackMathController.requestMissionAction(MISSION_ACTION_DISMISS,
+                    MATH_HARDNESS_LEVEL_HARD, Math.max(3, mAlarm.mathQuestionCount + 1), mMissionRandom);
+            }
+        });
 
         // Register Power button (screen off) intent receiver
         if (mPowerBehavior != PowerButtonBehavior.NOTHING) {
@@ -367,6 +376,7 @@ public class AlarmActivity extends BaseActivity implements View.OnClickListener,
         }
 
         bindAlarmService();
+        if (mBarcodeScanner != null) mBarcodeScanner.onResume();
 
         resetAnimations();
     }
@@ -374,6 +384,7 @@ public class AlarmActivity extends BaseActivity implements View.OnClickListener,
     @Override
     protected void onPause() {
         super.onPause();
+        if (mBarcodeScanner != null) mBarcodeScanner.onPause();
 
         unbindAlarmService();
 
@@ -390,6 +401,7 @@ public class AlarmActivity extends BaseActivity implements View.OnClickListener,
 
     @Override
     protected void onDestroy() {
+        if (mBarcodeScanner != null) mBarcodeScanner.close();
         if (mPowerBtnReceiverRegistered) {
             unregisterReceiver(mPowerBtnReceiver);
             mPowerBtnReceiverRegistered = false;
@@ -1354,27 +1366,42 @@ public class AlarmActivity extends BaseActivity implements View.OnClickListener,
     }
 
     private void requestAlarmAction(int action) {
-        if (mAlarmHandled) {
-            return;
+        if (mAlarmHandled || mBarcodeScanner.isActive()) return;
+        // A snooze with duration None is actually a dismiss and must not bypass the mission.
+        if (action == MISSION_ACTION_SNOOZE && isSnoozeDisabledForAlarmInstance()) {
+            action = MISSION_ACTION_DISMISS;
         }
-
-        String mathHardnessLevel = SettingsDAO.isPerAlarmMathHardnessLevelDisabled(getPrefs())
-            ? SettingsDAO.getAlarmMathHardnessLevel(getPrefs())
-            : mAlarm.mathHardnessLevel;
-
-        if (mathHardnessLevel.equals(DEFAULT_MATH_HARDNESS_LEVEL)) {
-            if (action == MISSION_ACTION_SNOOZE) {
-                snooze();
-            } else {
-                dismiss();
-            }
-
-            return;
-        }
-
+        String hardness = SettingsDAO.isPerAlarmMathHardnessLevelDisabled(getPrefs())
+            ? SettingsDAO.getAlarmMathHardnessLevel(getPrefs()) : mAlarm.mathHardnessLevel;
         resetAnimations();
+        if (DEFAULT_MATH_HARDNESS_LEVEL.equals(hardness)) {
+            afterMathMission(action);
+        } else {
+            mMathMissionController.requestMissionAction(action, hardness, mAlarm.mathQuestionCount, mMissionRandom);
+        }
+    }
 
-        mMathMissionController.requestMissionAction(action, mathHardnessLevel, mAlarm.mathQuestionCount, mMissionRandom);
+    private void afterMathMission(int action) {
+        if (mAlarmHandled) return;
+        if (action == MISSION_ACTION_DISMISS &&
+            (mAlarm.barcodeValue != null && !mAlarm.barcodeValue.isEmpty() ||
+             mAlarm.barcodeFormat != null && !mAlarm.barcodeFormat.isEmpty())) {
+            mBarcodeScanner.start(mAlarm.barcodeFormat, mAlarm.barcodeValue);
+        } else {
+            finishMissionAction(action);
+        }
+    }
+
+    private void finishMissionAction(int action) {
+        if (mAlarmHandled) return;
+        if (action == MISSION_ACTION_SNOOZE) snooze(); else dismiss();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (mBarcodeScanner != null) mBarcodeScanner.onPermissionResult(requestCode, grantResults);
     }
 
     /**
